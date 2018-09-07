@@ -260,7 +260,7 @@ class QuickBlox
     {
         $userId        = data_get($data, 'user_id');
         $occupations   = data_get($data, 'occupations');
-        $occupations[] = env('QUICKBLOX_ADMIN_ID', 59491464);
+        $occupations[] = env('QUICKBLOX_ADMIN_ID', 59832247);
         $occupations[] = $userId;
 
         $token         = $this->createUserToken([
@@ -282,11 +282,6 @@ class QuickBlox
                 'name'          => implode('_', $occupations),
             ]
         );
-    }
-
-    public function kickOutUsers($data = [])
-    {
-
     }
 
     public function getParticipatingRooms($data = [])
