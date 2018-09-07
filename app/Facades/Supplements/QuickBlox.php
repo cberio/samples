@@ -17,6 +17,7 @@ class QuickBlox
     private const USER_DETAILS       = '/users/'; // GET
     private const UPDATE_USER_DETAIL = '/users/'; // POST
 
+    private const CREATE_ROOM        = '/chat/Dialog.json'; // POST
     private const ROOM_LIST          = '/chat/Dialog.json'; // GET
 
     private const MESSAGE_LIST       = '/chat/Message.json'; // GET
@@ -250,6 +251,44 @@ class QuickBlox
         );
     }
 
+    public function retrieveRooms()
+    {
+        
+    }
+    
+    public function createRoom($data = [])
+    {
+        $userId        = data_get($data, 'user_id');
+        $occupations   = data_get($data, 'occupations');
+        $occupations[] = env('QUICKBLOX_ADMIN_ID', 59491464);
+        $occupations[] = $userId;
+
+        $token         = $this->createUserToken([
+            'login'    => 'ben',
+            'password' => '00000000',
+        ]);
+
+        return $this->request(
+            'POST',
+            self::CREATE_ROOM,
+            [
+                'Content-Type'               => 'application/json',
+                'QuickBlox-REST-API-Version' => '0.1.0',
+                'QB-Token'                   => $token,
+            ],
+            [
+                'type'          => 2,
+                'occupants_ids' => implode(',', $occupations),
+                'name'          => implode('_', $occupations),
+            ]
+        );
+    }
+
+    public function kickOutUsers($data = [])
+    {
+
+    }
+
     public function getParticipatingRooms($data = [])
     {
         $login    = data_get($data, 'login');
@@ -278,6 +317,7 @@ class QuickBlox
         $login    = data_get($data, 'login');
         $password = data_get($data, 'password');
         $dialogId = data_get($data, 'chat_dialog_id');
+        $perPage  = data_get($data, 'per_page', 30);
         $token    = $this->createUserToken([
             'login'    => $login,
             'password' => '00000000',
@@ -292,7 +332,8 @@ class QuickBlox
                 'QB-Token'                   => $token,
             ],
             [
-                'chat_dialog_id' => $dialogId
+                'chat_dialog_id' => $dialogId,
+                'per_page'       => $perPage,
             ]
         );
     }
@@ -300,6 +341,7 @@ class QuickBlox
     public function sendMessage($data = [])
     {
         $login    = data_get($data, 'login');
+        $name     = data_get($data, 'name');
         $password = data_get($data, 'password');
         $dialogId = data_get($data, 'chat_dialog_id');
         $message  = data_get($data, 'message');
@@ -320,7 +362,7 @@ class QuickBlox
                 'chat_dialog_id' => $dialogId,
                 'message'        => $message,
                 'send_to_chat'   => 1,
-                'name'           => $login,
+                'name'           => $name,
             ]
         );
     }

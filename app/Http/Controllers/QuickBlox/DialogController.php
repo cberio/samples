@@ -38,7 +38,12 @@ class DialogController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $data = QuickBlox::createRoom([
+            'user_id'   => $request->user_id,
+            'occupants' => $request->occupants,
+        ]);
+
+        return response()->json($data);
     }
 
     /**

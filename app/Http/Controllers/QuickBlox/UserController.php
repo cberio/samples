@@ -24,6 +24,10 @@ class UserController extends Controller
 
         $data = $this->generatePagination($users)->withPath('/quickBlox');
 
+        if ($request->wantsJson()) {
+            return response()->json($data);
+        }
+
         return view('quickBlox.index', ['users' => $data]);
     }
 

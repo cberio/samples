@@ -42,6 +42,7 @@ Route::group(['namespace' => 'QuickBlox', 'prefix' => 'quickBlox', 'as' => 'quic
 
     Route::group(['prefix' => 'dialogs', 'as' => 'dialogs.'], function () {
         Route::get('/', 'DialogController@index')->name('index');
+        Route::post('/', 'DialogController@store')->name('store');
     });
 
     Route::group(['prefix' => 'messages', 'as' => 'messages.'], function () {

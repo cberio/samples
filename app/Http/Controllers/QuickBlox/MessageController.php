@@ -35,6 +35,9 @@ class MessageController extends Controller
             'login'          => $request->user_name,
             'chat_dialog_id' => $request->dialog_id,
             'message'        => $request->message,
+            'name'           => $request->user_name, // custom field (key-value paired)
+            'custom_field'   => 'custom_value', // custom field (key-value paired)
+            'any_field'      => 'any_field', // custom field (key-value paired)
         ]);
 
         return response()->json($data);

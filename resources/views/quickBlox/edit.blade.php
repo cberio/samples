@@ -71,15 +71,30 @@
         </section>
 
         <section class="content-header">
-            <h1>연결 목록</h1>
+            <h1>채팅</h1>
         </section>
 
         <section class="content">
             <div class="row">
+                <div class="col-sm-12">
+                    <div class="box box-primary">
+                        <div class="box-footer">
+                            <div class="input-group">
+                                <select class="form-control select2" name="occupants[]" id="occupants" multiple="multiple" title="users"></select>
+                                <span class="input-group-btn">
+                                    <button type="button" onclick="createRoom()" class="btn btn-primary btn-flat">채팅생성</button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
                 @foreach(array_chunk($dialogs->items, 2) as $items)
                     @foreach($items as $dialog)
                         <div class="col-sm-6">
-                            <div class="box box-primary direct-chat direct-chat-primary">
+                            <div class="box box-success direct-chat direct-chat-primary">
                                 <div class="box-header">
                                     <h3 class="box-title">{{ $dialog->_id }}</h3>
                                     <div class="box-tools pull-right">
@@ -87,8 +102,14 @@
                                         <button type="button" class="btn btn-box-tool" data-widget="collapse">
                                             <i class="fa fa-minus"></i>
                                         </button>
+                                        <button type="button" class="btn btn-box-tool" data-toggle="tooltip" onclick="loadMessages('{{ $dialog->_id }}')">
+                                            <i class="fa fa-refresh"></i>
+                                        </button>
                                         <button type="button" class="btn btn-box-tool" data-toggle="tooltip" title="" data-widget="chat-pane-toggle" data-original-title="Contacts">
                                             <i class="fa fa-comments"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-box-tool" data-widget="remove" onclick="removeDialog('{{ $dialog->_id }}')">
+                                            <i class="fa fa-times"></i>
                                         </button>
                                     </div>
                                 </div>
@@ -124,13 +145,13 @@
                                                     <span class="contacts-list-name">type</span>
                                                     @switch($dialog->type)
                                                         @case(1)
-                                                        <span class="contacts-list-msg">오픈채팅</span>
+                                                        <span class="contacts-list-msg">오픈채팅 [{{ $dialog->type }}]</span>
                                                         @break
                                                         @case(2)
-                                                        <span class="contacts-list-msg">초대</span>
+                                                        <span class="contacts-list-msg">초대 [{{ $dialog->type }}]</span>
                                                         @break
                                                         @case(3)
-                                                        <span class="contacts-list-msg">1:1</span>
+                                                        <span class="contacts-list-msg">1:1 [{{ $dialog->type }}]</span>
                                                         @break
                                                     @endswitch
                                                 </div>
@@ -182,6 +203,8 @@
 
 @section('scripts')
     <script>
+        var users = [];
+
         $(document).ready(function() {
             var tags = $("#tags");
             var values = '{{ $user->user_tags }}'.split(',');
@@ -197,6 +220,30 @@
             });
 
             tags.val(values).trigger('change');
+
+            var request = $.ajax({
+                url: '{{ route("quickBlox.index") }}',
+                dataType: 'json',
+            });
+
+            $.when(request).done(function (response) {
+                var data = response.data;
+                users = $.map(data, function (user) {
+                    user.text = user.login;
+
+                    return user;
+                });
+
+                $("#occupants").select2({
+                    allowClear: true,
+                    lang: 'ko',
+                    tags: true,
+                    tokenSeparators: [',', ' '],
+                    data: users
+                });
+            }).fail(function () {
+                alert('failed');
+            });
         });
 
         function sendMessage(dialogId) {
@@ -230,6 +277,7 @@
                 alert('failed');
             }).always(function () {
                 overlay.hide();
+                element.focus();
             });
         }
 
@@ -281,18 +329,29 @@
                 );
             })
         }
-    </script>
 
-    <template id="mine">
-        <div class="direct-chat-msg right">
-            <div class="direct-chat-info clearfix">
-                <span class="direct-chat-name pull-left">Alexander Pierce</span>
-                <span class="direct-chat-timestamp pull-right">23 Jan 2:00 pm</span>
-            </div>
-            <img class="direct-chat-img" src="https://adminlte.io/themes/AdminLTE/dist/img/user1-128x128.jpg" alt="Message User Image">
-            <div class="direct-chat-text">
-                Is this template really for free? That's unbelievable!
-            </div>
-        </div>
-    </template>
+        function createRoom() {
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+
+            var request = $.ajax({
+                url: '{{ route("quickBlox.dialogs.store") }}',
+                method: 'POST',
+                dataType: 'json',
+                data: {
+                    occupants: $("#occupants").val(),
+                    user_id: '{{ $user->id }}'
+                }
+            });
+
+            $.when(request).done(function (response) {
+                window.location.reload();
+            }).fail(function () {
+                alert('failed');
+            })
+        }
+    </script>
 @endsection
