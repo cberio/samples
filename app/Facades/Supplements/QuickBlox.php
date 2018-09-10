@@ -19,6 +19,8 @@ class QuickBlox
 
     private const CREATE_ROOM        = '/chat/Dialog.json'; // POST
     private const ROOM_LIST          = '/chat/Dialog.json'; // GET
+    private const REMOVE_ROOM        = '/chat/Dialog/'; // DELETE
+    private const UPDATE_ROOM        = '/chat/Dialog/'; // PUT
 
     private const MESSAGE_LIST       = '/chat/Message.json'; // GET
     private const CREATE_MESSAGE     = '/chat/Message.json'; // POST
@@ -253,14 +255,13 @@ class QuickBlox
 
     public function retrieveRooms()
     {
-        
+        return null;
     }
     
     public function createRoom($data = [])
     {
         $userId        = data_get($data, 'user_id');
-        $occupations   = data_get($data, 'occupations');
-        $occupations[] = env('QUICKBLOX_ADMIN_ID', 59832247);
+        $occupations   = data_get($data, 'occupants');
         $occupations[] = $userId;
 
         $token         = $this->createUserToken([
@@ -304,6 +305,51 @@ class QuickBlox
             [
                 $data
             ]
+        );
+    }
+
+    public function updateRoom($data = [])
+    {
+        $dialogId     = data_get($data, 'dialog_id');
+        $occupantsIds = data_get($data, 'occupant_ids');
+        $token        = $this->createUserToken([
+            'login'    => 'ben',
+            'password' => '00000000',
+        ]);
+
+        return $this->request(
+            'PUT',
+            self::UPDATE_ROOM."$dialogId.json",
+            [
+                'Content-Type'               => 'application/json',
+                'QuickBlox-REST-API-Version' => '0.1.0',
+                'QB-Token'                   => $token,
+            ],
+            [
+                'pull_all' => [
+                    'occupants_ids' => array_wrap($occupantsIds)
+                ]
+            ]
+        );
+    }
+
+    public function removeRooms($data = [])
+    {
+        $dialogIds = data_get($data, 'dialog_ids');
+        $token     = $this->createUserToken([
+            'login'    => 'ben',
+            'password' => '00000000',
+        ]);
+
+        return $this->request(
+            'DELETE',
+            self::REMOVE_ROOM.implode(',', $dialogIds).'.json',
+            [
+                'Content-Type'               => 'application/json',
+                'QuickBlox-REST-API-Version' => '0.1.0',
+                'QB-Token'                   => $token,
+            ],
+            []
         );
     }
 

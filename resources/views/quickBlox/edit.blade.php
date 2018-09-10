@@ -11,7 +11,7 @@
         <section class="content">
             <div class="box">
                 <div class="box-header">
-                    <h3 class="box-title">사용자 생성</h3>
+                    <h3 class="box-title">사용자 수정</h3>
                 </div>
 
                 <form class="form-horizontal" method="post">
@@ -122,10 +122,30 @@
                                         <ul class="contacts-list">
                                             <li>
                                                 <div class="contacts-list-info">
+                                                    <span class="contacts-list-name">내보내기</span>
+                                                    <span class="contacts-list-msg">
+                                                        @foreach($dialog->occupants_ids as $userId)
+                                                            @if ($userId != $dialog->user_id && $userId != $user->id)
+                                                                <button class="btn btn-sm btn-danger" type="button"
+                                                                        data-url="{{ route('quickBlox.dialogs.update', $dialog->_id) }}"
+                                                                        onclick="removeUser('{{ $userId }}', this)">
+                                                                    {{ $userId }}
+                                                                </button>
+                                                            @else
+                                                                <span class="label label-success">{{ $userId }}</span>
+                                                            @endif
+                                                        @endforeach
+                                                    </span>
+                                                </div>
+                                            </li>
+
+                                            <li>
+                                                <div class="contacts-list-info">
                                                     <span class="contacts-list-name">xmpp_room_jid</span>
                                                     <span class="contacts-list-msg">{{ $dialog->xmpp_room_jid }}</span>
                                                 </div>
                                             </li>
+
                                             <li>
                                                 <div class="contacts-list-info">
                                                     <span class="contacts-list-name">name</span>
@@ -353,5 +373,30 @@
                 alert('failed');
             })
         }
+
+        function removeUser(userId, obj) {
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+
+            var request = $.ajax({
+                url: $(obj).data('url'),
+                method: 'PUT',
+                dataType: 'json',
+                data: {
+                    occupant_ids: userId
+                }
+            });
+
+            $.when(request).done(function (response) {
+                console.log(response);
+                // window.location.reload();
+            }).fail(function () {
+                alert('failed');
+            });
+        }
+
     </script>
 @endsection

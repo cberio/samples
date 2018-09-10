@@ -11,6 +11,8 @@ class AppLozic
     private const BASE_URL              = 'https://apps.applozic.com';
 
     private const REGISTRATION          = '/rest/ws/register/client'; // POST
+
+    private const RETRIEVE_USERS        = '/rest/ws/user/filter'; // GET
     private const USER_DETAIL           = '/rest/ws/user/v2/detail'; // POST
     private const UPDATE_USER_DETAIL    = '/rest/ws/user/update'; // GET
     private const UPDATE_USER_PASSWORD  = '/rest/ws/user/update/password'; // GET
@@ -95,6 +97,18 @@ class AppLozic
         logger('body'. $response->getBody());
 
         return null;
+    }
+
+    public function retrieveUsers($data = [])
+    {
+        return $this->request(
+            'GET',
+            self::RETRIEVE_USERS,
+            [
+                'Application-Key' => env('APP_LOZIC_ID'),
+            ],
+            $data
+        );
     }
 
     public function getUserDetails($data = [])

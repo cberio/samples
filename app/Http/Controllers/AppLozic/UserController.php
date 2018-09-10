@@ -10,9 +10,15 @@ use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $users = AppLozicUser::all();
+
+        if ($request->wantsJson()) {
+            $data = AppLozic::retrieveUsers([]);
+
+            return response()->json($data);
+        }
 
         return view('appLozic.index', ['users' => $users]);
     }
